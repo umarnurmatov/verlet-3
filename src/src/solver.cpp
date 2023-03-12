@@ -3,25 +3,17 @@
 
 VerletObject* Solver::addObject(sf::Vector2f position, float radius, float mass, bool fixed)
 {
-    auto& ref = m_objects.emplace_back(VerletObject(position, radius, mass, fixed));
-    return std::addressof(ref);
+    return &m_objects.emplace_back(VerletObject(position, radius, mass, fixed));
+}
+
+VerletObject* Solver::addObject(VerletObject v)
+{
+    return &m_objects.emplace_back(v);
 }
 
 void Solver::addLink(VerletObject *v1, VerletObject *v2, float length)
 {
-    m_links.push_back(Link(v1, v2, length));
-}
-
-void Solver::setConstraint(sf::Vector2f position, float radius)
-{
-    m_constraint_center = position;
-    m_constraint_radius = radius;
-}
-
-void Solver::setConstraint(sf::Vector2f size, sf::Vector2f position)
-{
-    m_constrain.setSize(size);
-    m_constrain.setPosition(position);
+    m_links.emplace_back(Link(v1, v2, length));
 }
 
 void Solver::update(float dt)
@@ -42,20 +34,40 @@ void Solver::update(float dt)
     return m_objects;
 }
 
-void Solver::addRectangle(float w, float h, float x, float y, float radius, float mass, bool fixed)
-{
-    float v_mass = mass / 4;
-    auto v1 = addObject(sf::Vector2f(x,     y    ), radius, v_mass, fixed);
-    auto v2 = addObject(sf::Vector2f(x + w, y    ), radius, v_mass, fixed);
-    auto v3 = addObject(sf::Vector2f(x,     y + h), radius, v_mass, fixed);
-    auto v4 = addObject(sf::Vector2f(x + w, y + h), radius, v_mass, fixed);
 
-    addLink(v1, v2, v1->distance(v2));
-    addLink(v2, v3, v2->distance(v3));
-    addLink(v3, v4, v3->distance(v4));
-    addLink(v4, v1, v4->distance(v1));
-    addLink(v1, v3, v1->distance(v3));
-    addLink(v2, v4, v2->distance(v4));
+
+void Solver::addRectangle(uint w_count, uint h_count, float r, float x, float y, float mass, bool fixed)
+{
+    float v_mass = mass / (w_count * h_count);
+
+    std::vector<std::vector<int>> tr {{1, 0}, {0, 1}, {1, 1}};
+
+    std::vector<std::vector<VerletObject*>> v;
+
+    for (size_t i = 0; i < h_count; i++)
+    {
+        v.push_back(std::vector<VerletObject*>());
+        for (size_t j = 0; j < w_count; j++)
+        {
+            v[i].push_back(addObject(sf::Vector2f(x + 2.f*j*r, y + 2.f*i*r), r, v_mass, fixed));
+        }
+    }
+
+    for (size_t i = 0; i < h_count; i++)
+    {
+        for (size_t j = 0; j < w_count; j++)
+        {
+            for(auto t : tr)
+            {
+                if(i + t[0] < v.size() && j + t[1] < v[0].size())
+                {
+                    auto* vo1 = v[i][j];
+                    auto* vo2 = v[i + t[0]][j + t[1]]; 
+                    addLink(vo1, vo2, vo1->distance(vo2));
+                }
+            }
+        }
+    }
 }
 
 
@@ -85,14 +97,11 @@ void Solver::applyLinks()
 
 void Solver::applyConstraint()
 {
-    for (auto& obj : m_objects) {
-        const sf::Vector2f v    = m_constraint_center - obj.pos_current;
-        const float        dist = v.length();
-        if (dist > (m_constraint_radius - obj.radius)) {
-            const sf::Vector2f n = v / dist;
-            obj.pos_current = m_constraint_center - n * (m_constraint_radius - obj.radius);
-        }
+    for(auto& v : m_objects) {
+        v.pos_current.x = std::max( std::min( v.pos_current.x, m_GWidth  ), 0.0f );
+        v.pos_current.y = std::max( std::min( v.pos_current.y, m_GHeight ), 0.0f );
     }
+
 }
 
 void Solver::solveCollision()
@@ -102,8 +111,12 @@ void Solver::solveCollision()
         auto temp = obj1;
         for(auto obj2 = ++temp; obj2 != m_objects.end(); obj2++)
         {
+            // TODO fix this mess
+            if(obj1->pos_current == obj2->pos_current) continue;
+
             sf::Vector2f axis = obj1->pos_current - obj2->pos_current;
             float min_dist = obj1->radius + obj2->radius;
+
             if(axis.lengthSq() < min_dist * min_dist)
             {
                 const sf::Vector2f normal = axis.normalized();

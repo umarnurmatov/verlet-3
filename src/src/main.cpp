@@ -21,12 +21,17 @@ int main() {
     Solver solver;
     Renderer renderer{window};
 
-    solver.setConstraint(sf::Vector2f(window.getSize().x * 0.5f, window.getSize().y * 0.5f), 500.f);
+    solver.setConstraint(window.getSize().x, window.getSize().y);
 
     sf::Clock imgui_sfml_deltaClock;
     sf::Clock solver_clock;
+
     sf::Clock clock;
-    float dt = 1.f;
+    float current_fps = 0.f;
+    int iterations = 8;
+    std::vector<float> fps;
+
+
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -40,27 +45,42 @@ int main() {
             if(event.type == event.MouseButtonPressed && event.mouseButton.button == sf::Mouse::Button::Left)
             {
                 sf::Vector2f mouse_pos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-                solver.addRectangle(100.f, 100.f, mouse_pos.x, mouse_pos.y, 30.f, 100.f, false);
-                //f = !f;
+                solver.addRectangle(5, 5, 10.f, mouse_pos.x, mouse_pos.y, 100.f, false);
             }
         }
 
-        // if(clock.getElapsedTime().asSeconds() > dt)
-        // {
-        //     solver.addObject(sf::Vector2f(900.f, 400.f), 50.f, 10.f);
-        //     clock.restart();
-        // }
+
 
         ImGui::SFML::Update(window, imgui_sfml_deltaClock.restart());
 
-        ImGui::InputFloat("Delta time", &dt, 0.1f);
-
         solver.update(solver_clock.restart().asSeconds());
+
+        ImGui::Text(std::to_string(current_fps).c_str());
+        ImGui::PlotLines("FPS", fps.data(), fps.size());
+        ImGui::Separator();
+        ImGui::Text("Objects count: "); ImGui::SameLine();
+        ImGui::Text((std::to_string(solver.getObjects().size())).c_str());
+        ImGui::Separator();
+        ImGui::SliderInt("Physcis Iterations count", &iterations, 1, 16);
+        solver.setSubstepsCount(iterations);
+        ImGui::Separator();
+
 
         window.clear();
         ImGui::SFML::Render(window);
         renderer.render(solver);
         window.display();
+
+        current_fps = 1.f / clock.restart().asSeconds();
+
+        if(fps.size() < 300)
+
+            fps.push_back(current_fps);
+        else
+        {
+            fps.erase(fps.begin());
+            fps.push_back(current_fps);
+        }
     }
 
     ImGui::SFML::Shutdown();

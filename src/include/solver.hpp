@@ -7,13 +7,14 @@
 #include "verletObject.hpp"
 #include "link.hpp"
 
+typedef unsigned int uint;
+
 class Solver
 {
     sf::Vector2f              m_gravity;
-    uint32_t                  m_sub_steps;   
+    uint                      m_sub_steps;   
     float                     m_response_coef;  
-    sf::Vector2f              m_constraint_center;
-    float                     m_constraint_radius;
+    float                     m_GHeight, m_GWidth;
     sf::RectangleShape        m_constrain;
     std::list<VerletObject>   m_objects;
     std::list<Link>           m_links;
@@ -23,23 +24,27 @@ public:
     Solver()
         : m_gravity            {0.0f, 1000.0f},
           m_sub_steps          {8},
-          m_response_coef      {0.75f},
-          m_constraint_radius  {100.0f}
+          m_response_coef      {0.75f}
     {
     }
 
     VerletObject* addObject(sf::Vector2f position, float radius, float mass, bool fixed = false);
+    VerletObject* addObject(VerletObject v);
 
     void addLink(VerletObject *v1, VerletObject *v2, float length);
 
-    void setConstraint(sf::Vector2f position, float radius);
-    void setConstraint(sf::Vector2f size, sf::Vector2f position);
+    void setConstraint(float w, float h) { m_GWidth = w; m_GHeight = h; }
+    void setSubstepsCount(uint substeps) { m_sub_steps = substeps; }
 
     void update(float dt);
 
     [[nodiscard]] const std::list<VerletObject>& getObjects() const;
 
-    void addRectangle(float w, float h, float x, float y, float radius, float mass, bool fixed);
+    /// @brief 
+    /// @param w_count amount of verlet object on x-axis
+    /// @param h_count amount of verlet object on y-axis
+    /// @param r       radius of each verlet object
+    void addRectangle(uint w_count, uint h_count, float r, float x, float y, float mass, bool fixed);
 
 
 private:
