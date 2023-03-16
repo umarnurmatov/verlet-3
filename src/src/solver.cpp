@@ -29,7 +29,7 @@ void Solver::update(float dt)
     }
 }
 
-[[nodiscard]] const std::list<VerletObject>& Solver::getObjects() const
+[[nodiscard]] const std::vector<VerletObject>& Solver::getObjects() const
 {
     return m_objects;
 }
@@ -108,8 +108,7 @@ void Solver::solveCollision()
 {
     for(auto obj1 = m_objects.begin(); obj1 != m_objects.end(); obj1++)
     {
-        auto temp = obj1;
-        for(auto obj2 = ++temp; obj2 != m_objects.end(); obj2++)
+        for(auto obj2 = obj1 + 1; obj2 != m_objects.end(); obj2++)
         {
             // TODO fix this mess
             if(obj1->pos_current == obj2->pos_current) continue;

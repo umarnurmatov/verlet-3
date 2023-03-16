@@ -11,13 +11,13 @@ typedef unsigned int uint;
 
 class Solver
 {
-    sf::Vector2f              m_gravity;
-    uint                      m_sub_steps;   
-    float                     m_response_coef;  
-    float                     m_GHeight, m_GWidth;
-    sf::RectangleShape        m_constrain;
-    std::list<VerletObject>   m_objects;
-    std::list<Link>           m_links;
+    sf::Vector2f                m_gravity;
+    uint                        m_sub_steps;   
+    float                       m_response_coef;  
+    float                       m_GHeight, m_GWidth;
+    sf::RectangleShape          m_constrain;
+    std::vector<VerletObject>   m_objects;
+    std::vector<Link>           m_links;
 
 public:
 
@@ -26,6 +26,7 @@ public:
           m_sub_steps          {8},
           m_response_coef      {0.75f}
     {
+        m_objects.reserve(1000);
     }
 
     VerletObject* addObject(sf::Vector2f position, float radius, float mass, bool fixed = false);
@@ -38,7 +39,7 @@ public:
 
     void update(float dt);
 
-    [[nodiscard]] const std::list<VerletObject>& getObjects() const;
+    [[nodiscard]] const std::vector<VerletObject>& getObjects() const;
 
     /// @brief 
     /// @param w_count amount of verlet object on x-axis
