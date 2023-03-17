@@ -9,6 +9,7 @@ add_executable(${NAME} ${source_files})
 
 target_include_directories(${NAME} PRIVATE 
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    ${Boost_INCLUDE_DIRS}
 )
 target_link_libraries(${NAME} PRIVATE
     sfml-system sfml-graphics sfml-window

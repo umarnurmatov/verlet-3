@@ -20,6 +20,7 @@ int main() {
 
     Solver solver;
     Renderer renderer{window};
+    
 
     solver.setConstraint(window.getSize().x, window.getSize().y);
 

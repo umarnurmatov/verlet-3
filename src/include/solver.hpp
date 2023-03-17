@@ -6,6 +6,7 @@
 
 #include "verletObject.hpp"
 #include "link.hpp"
+#include "ext_stable_vector.hpp"
 
 typedef unsigned int uint;
 
