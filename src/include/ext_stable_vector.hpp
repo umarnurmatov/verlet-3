@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <boost/container/stable_vector.hpp>
-
+#include <functional>
 
 /// @brief Extended boost::container::stable_vector. References don't invalidate even when element is erased.
 /// @tparam T element type
@@ -44,7 +44,7 @@ public:
         return m_data.at(i);
     }
 
-    size_t size()
+    size_t size() const
     {
         return m_data.size();
     }

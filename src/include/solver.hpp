@@ -17,7 +17,7 @@ class Solver
     float                       m_response_coef;  
     float                       m_GHeight, m_GWidth;
     sf::RectangleShape          m_constrain;
-    std::vector<VerletObject>   m_objects;
+    ext_stable_vector<VerletObject>   m_objects;
     std::vector<Link>           m_links;
 
 public:
@@ -27,7 +27,6 @@ public:
           m_sub_steps          {8},
           m_response_coef      {0.75f}
     {
-        m_objects.reserve(1000);
     }
 
     VerletObject* addObject(sf::Vector2f position, float radius, float mass, bool fixed = false);
@@ -40,7 +39,7 @@ public:
 
     void update(float dt);
 
-    [[nodiscard]] const std::vector<VerletObject>& getObjects() const;
+    [[nodiscard]] ext_stable_vector<VerletObject>& getObjects();
 
     /// @brief 
     /// @param w_count amount of verlet object on x-axis

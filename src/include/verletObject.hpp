@@ -1,5 +1,4 @@
 #pragma once
-#include "SFML/Graphics/Color.hpp"
 #include "SFML/System/Vector2.hpp"
 #include <cmath>
 
@@ -11,8 +10,6 @@ struct VerletObject
 
     float radius;
     float mass;
-
-    sf::Color col = sf::Color::White;
 
     bool fixed;
 

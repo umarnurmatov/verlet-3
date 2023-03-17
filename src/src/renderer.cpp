@@ -1,23 +1,24 @@
 #include "renderer.hpp"
 
 Renderer::Renderer(sf::RenderTarget &target)
-    : m_target{target}
+    : m_target{target},
+      m_outline_thick{1.f},
+      m_outl_col{sf::Color::Magenta},
+      m_fill_col{sf::Color::White}
 {
+    m_circle.setPointCount(32);
+    m_circle.setOutlineThickness(m_outline_thick);
+    m_circle.setOutlineColor(m_outl_col);
 }
 
 void Renderer::render(Solver &solver)
 {
-    sf::CircleShape circle;
-    circle.setPointCount(64);
-    circle.setOutlineThickness(2.f);
-    circle.setOutlineColor(sf::Color::Blue);
-    const auto& objects = solver.getObjects();
-    for(const auto& obj : objects)
+    auto& objects = solver.getObjects();
+    for(size_t i = 0; i < objects.size(); i++)
     {
-        circle.setRadius(obj.radius - 2.f);
-        circle.setOrigin(sf::Vector2f(obj.radius - 1.f, obj.radius - 1.f));
-        circle.setPosition(obj.pos_current);
-        circle.setFillColor(obj.col);
-        m_target.draw(circle);
+        auto& obj = objects[i];
+        m_circle.setRadius(obj.radius - m_outline_thick);
+        m_circle.setPosition(obj.pos_current);
+        m_target.draw(m_circle);
     }
 }

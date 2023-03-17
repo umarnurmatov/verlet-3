@@ -3,12 +3,12 @@
 
 VerletObject* Solver::addObject(sf::Vector2f position, float radius, float mass, bool fixed)
 {
-    return &m_objects.emplace_back(VerletObject(position, radius, mass, fixed));
+    return m_objects.emplace_back(VerletObject(position, radius, mass, fixed));
 }
 
 VerletObject* Solver::addObject(VerletObject v)
 {
-    return &m_objects.emplace_back(v);
+    return m_objects.emplace_back(v);
 }
 
 void Solver::addLink(VerletObject *v1, VerletObject *v2, float length)
@@ -29,7 +29,7 @@ void Solver::update(float dt)
     }
 }
 
-[[nodiscard]] const std::vector<VerletObject>& Solver::getObjects() const
+[[nodiscard]] ext_stable_vector<VerletObject>& Solver::getObjects()
 {
     return m_objects;
 }
@@ -73,17 +73,17 @@ void Solver::addRectangle(uint w_count, uint h_count, float r, float x, float y,
 
 void Solver::applyGravity()
 {
-    for(auto& obj : m_objects)
+    for (size_t i = 0; i < m_objects.size(); i++)
     {
-        obj.accelerate(m_gravity);
+        m_objects[i].accelerate(m_gravity);
     }
 }
 
 void Solver::updateObjects(float dt)
 {
-    for(auto& obj : m_objects)
+    for (size_t i = 0; i < m_objects.size(); i++)
     {
-        obj.updatePosition(dt);
+        m_objects[i].updatePosition(dt);
     }
 }
 
@@ -97,7 +97,9 @@ void Solver::applyLinks()
 
 void Solver::applyConstraint()
 {
-    for(auto& v : m_objects) {
+    for (size_t i = 0; i < m_objects.size(); i++)
+    {
+        auto& v = m_objects[i];
         v.pos_current.x = std::max( std::min( v.pos_current.x, m_GWidth  ), 0.0f );
         v.pos_current.y = std::max( std::min( v.pos_current.y, m_GHeight ), 0.0f );
     }
@@ -106,10 +108,12 @@ void Solver::applyConstraint()
 
 void Solver::solveCollision()
 {
-    for(auto obj1 = m_objects.begin(); obj1 != m_objects.end(); obj1++)
+    for(size_t i = 0; i < m_objects.size(); i++)
     {
-        for(auto obj2 = obj1 + 1; obj2 != m_objects.end(); obj2++)
+        for(size_t j = i + 1; j < m_objects.size(); j++)
         {
+            auto* obj1 = &m_objects[i];
+            auto* obj2 = &m_objects[j];
             // TODO fix this mess
             if(obj1->pos_current == obj2->pos_current) continue;
 
